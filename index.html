@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+  <title>Demo Oauth2</title>
+  <link rel="SHORTCUT ICON" href="./images/favicon.svg" type="image/x-icon">
+
+  <!-- msal.min.js can be used in the place of msal.js; included msal.js to make debug easy -->
+  <script src="https://alcdn.msauth.net/browser/2.35.0/js/msal-browser.min.js"></script>
+  
+  <!-- adding Bootstrap 4 for UI components  -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+
+  <!-- importing bootstrap.js and supporting js libraries -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+
+</head>
+
+<body>
+  <nav class="navbar navbar-default navbar-dark bg-primary">
+    <a class="navbar-brand" href="/">Microsoft identity platform</a>
+    <div class="navbar-right">
+      <div class="navbar-text mr-1" id="divUserName"></div>
+      <button type="button" id="SignIn" class="btn btn-info" onclick="signIn()">
+        Sign In
+      </button>
+    </div>
+  </nav>
+  <h5 class="card-header text-center">Vanilla JavaScript SPA calling MS Graph API with MSAL.js</h5>
+  <br>
+  <div class="row" style="margin:auto">
+    <div id="card-div" class="col-md-3" style="display:block">
+      <div class="card text-center">
+        <div class="card-body">
+          <h5 class="card-title" id="WelcomeMessage">Please sign-in to see your profile and read your mails</h5>
+          <div id="profile-div"></div>
+          <br>
+          <br>
+          <button class="btn btn-primary" id="seeProfile" onclick="seeProfile()">See Profile</button>
+          <br>
+        </div>
+      </div>
+    </div>
+    <br>
+    <br>
+    <div class="col-md-4">
+      <div class="list-group" id="list-tab" role="tablist">
+      </div>
+    </div>
+    <div class="col-md-5">
+      <div class="tab-content" id="nav-tabContent">
+      </div>
+    </div>
+    
+    
+    
+    
+
+    
+    
+  </div>
+  <br>
+  <br>
+
+  <div class="row" style="margin:auto">
+
+    <br>
+    <button class="btn btn-primary" onclick="testApi()">Test Api</button>
+
+    <br>
+    <div id="salidaTest">Pulsa boton.............</div>
+  </div>
+  <br>
+  <br>
+  <div class="row" style="margin:auto">
+    <br>
+    <button class="btn btn-primary" onclick="testApiAuth()">Test Api Auth</button>
+
+    <br>
+    <div id="salidaTestAuth">Pulsa boton.............</div>
+  </div>
+
+  <!-- importing app scripts (load order is important) -->
+  <script type="text/javascript" src="./js/authConfig.js"></script>
+  <script type="text/javascript" src="./js/graphConfig.js"></script>
+  <script type="text/javascript" src="./js/ui.js"></script>
+
+  <script type="text/javascript" src="./js/authRedirect.js"></script>
+  <!-- uncomment the above line and comment the line below if you would like to use the redirect flow -->
+  <!--<script type="text/javascript" src="./authPopup.js"></script>-->
+  <script type="text/javascript" src="./js/graph.js"></script>
+
+  <script>
+    let tokenApi = null;
+
+    function testApi(){
+        //mostrarLoading();
+        
+        $('#salidaTest').html('');
+        
+        var requestAjax = $.ajax({
+            type: "GET",
+            dataType: "json",
+            url : 'http://localhost:8080/demo-oauth2/ws/test'
+        });
+
+        requestAjax.done(function(data, textStatus, jqXHR){
+            $('#salidaTest').html(data);
+        });
+
+        requestAjax.fail(function(jqXHR, textStatus) {
+            console.error(jqXHR.responseText);
+            $('#salidaTest').html('Error: ' + jqXHR.status + ' ->  ' + jqXHR.responseText);
+            //mensajeError(jqXHR.responseText, jqXHR.status, jqXHR.statusText);
+        });
+        
+        requestAjax.always(function(data, textStatus, jqXHR) {
+            //ocultarLoading();
+        });
+    }
+
+    function testApiAuth() {
+        getTokenRedirect(loginRequestApi)
+            .then(response => {
+                tokenApi = response.accessToken;
+                apiTestAuth();
+            }).catch(error => {
+                $('#salidaTestAuth').html(error);
+                console.error(error);
+            });
+    }
+
+    function apiTestAuth(){
+        //mostrarLoading();
+        
+        $('#salidaTestAuth').html('');
+        
+        var requestAjax = $.ajax({
+            type: "GET",
+            dataType: "json",
+            headers: {'Authorization': 'Bearer ' + tokenApi },
+            url : 'http://localhost:8080/demo-oauth2/ws/auth'
+        });
+
+        requestAjax.done(function(data, textStatus, jqXHR){
+            $('#salidaTestAuth').html(data);
+        });
+
+        requestAjax.fail(function(jqXHR, textStatus) {
+            console.error(jqXHR.responseText);
+            $('#salidaTest').html('Error: ' + jqXHR.status + ' ->  ' + jqXHR.responseText);
+            //mensajeError(jqXHR.responseText, jqXHR.status, jqXHR.statusText);
+        });
+        
+        requestAjax.always(function(data, textStatus, jqXHR) {
+            //ocultarLoading();
+        });
+    }
+
+  </script>
+</body>
+
+</html>
